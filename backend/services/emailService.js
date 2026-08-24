@@ -1,12 +1,22 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.EMAIL_PORT) || 587,
   secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  }
+});
+
+// Verify SMTP connection on startup — errors will appear in Railway logs immediately
+transporter.verify((err) => {
+  if (err) {
+    console.error('❌ Email SMTP connection FAILED:', err.message);
+    console.error('   Check EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS env vars.');
+  } else {
+    console.log('✅ Email SMTP connection verified — ready to send.');
   }
 });
 
@@ -78,4 +88,20 @@ async function sendWaitlistOffer({ to, customerName, eventTitle, category, offer
   await transporter.sendMail({ from: FROM, to, subject: `Seat Available for ${eventTitle} — Act Fast!`, html });
 }
 
-module.exports = { sendBookingConfirmation, sendWaitlistOffer };
+/**
+ * Send a simple test email to verify SMTP config is working.
+ */
+async function sendTestEmail(to) {
+  await transporter.sendMail({
+    from: FROM,
+    to,
+    subject: '✅ TicketSphere — Email Test',
+    html: `<div style="font-family:Arial,sans-serif;padding:32px;max-width:500px">
+      <h2>📧 Email is working!</h2>
+      <p>Your TicketSphere email configuration is correctly set up.</p>
+      <p>Booking confirmation emails with QR codes will be delivered to customers.</p>
+    </div>`
+  });
+}
+
+module.exports = { sendBookingConfirmation, sendWaitlistOffer, sendTestEmail };
