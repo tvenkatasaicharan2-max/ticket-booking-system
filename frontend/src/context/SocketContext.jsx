@@ -13,8 +13,11 @@ export function SocketProvider({ children }) {
     // Always maintain one persistent socket connection
     if (!socketRef.current) {
       const s = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
-        transports: ['websocket'],
-        autoConnect: true
+        transports: ['polling', 'websocket'],  // polling first so the handshake succeeds, then upgrades
+        withCredentials: true,
+        autoConnect: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
       });
       socketRef.current = s;
       setSocket(s);
