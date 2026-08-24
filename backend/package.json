@@ -9,7 +9,6 @@
     "dev": "node --watch server.js"
   },
   "dependencies": {
-    "@getbrevo/brevo": "^6.0.3",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -19,7 +18,6 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.13",
     "qrcode": "^1.5.3",
-    "resend": "^6.22.0",
     "socket.io": "^4.7.5"
   }
 }
