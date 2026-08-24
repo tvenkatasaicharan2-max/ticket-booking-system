@@ -1,29 +1,16 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT) || 465,   // 465 = SMTPS (works on Railway); 587 is often blocked
-  secure: (process.env.EMAIL_PORT ? parseInt(process.env.EMAIL_PORT) === 465 : true),  // true for 465, false for 587
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  connectionTimeout: 10000,   // fail fast — 10s instead of hanging forever
-  greetingTimeout: 10000,
-  socketTimeout: 10000
-});
+// Railway blocks all outbound SMTP — using Resend's HTTP API instead
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Verify SMTP connection on startup — errors will appear in Railway logs immediately
-transporter.verify((err) => {
-  if (err) {
-    console.error('❌ Email SMTP connection FAILED:', err.message);
-    console.error('   Check EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASS env vars.');
-  } else {
-    console.log('✅ Email SMTP connection verified — ready to send.');
-  }
-});
+const FROM = process.env.EMAIL_FROM || 'TicketSphere <onboarding@resend.dev>';
 
-const FROM = process.env.EMAIL_FROM || '"TicketSphere" <noreply@ticketsphere.com>';
+// Verify API key is configured on startup
+if (!process.env.RESEND_API_KEY) {
+  console.error('❌ RESEND_API_KEY is not set — emails will not be sent!');
+} else {
+  console.log('✅ Resend email service ready.');
+}
 
 /**
  * Send booking confirmation email with embedded QR code.
@@ -56,7 +43,14 @@ async function sendBookingConfirmation({ to, customerName, eventTitle, showDateT
     </div>
   </div>`;
 
-  await transporter.sendMail({ from: FROM, to, subject: `Booking Confirmed: ${eventTitle}`, html });
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: [to],
+    subject: `Booking Confirmed: ${eventTitle}`,
+    html
+  });
+
+  if (error) throw new Error(error.message);
 }
 
 /**
@@ -88,23 +82,32 @@ async function sendWaitlistOffer({ to, customerName, eventTitle, category, offer
     </div>
   </div>`;
 
-  await transporter.sendMail({ from: FROM, to, subject: `Seat Available for ${eventTitle} — Act Fast!`, html });
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: [to],
+    subject: `Seat Available for ${eventTitle} — Act Fast!`,
+    html
+  });
+
+  if (error) throw new Error(error.message);
 }
 
 /**
- * Send a simple test email to verify SMTP config is working.
+ * Send a simple test email to verify Resend config is working.
  */
 async function sendTestEmail(to) {
-  await transporter.sendMail({
+  const { error } = await resend.emails.send({
     from: FROM,
-    to,
+    to: [to],
     subject: '✅ TicketSphere — Email Test',
     html: `<div style="font-family:Arial,sans-serif;padding:32px;max-width:500px">
       <h2>📧 Email is working!</h2>
-      <p>Your TicketSphere email configuration is correctly set up.</p>
+      <p>Your TicketSphere email configuration is correctly set up via Resend.</p>
       <p>Booking confirmation emails with QR codes will be delivered to customers.</p>
     </div>`
   });
+
+  if (error) throw new Error(error.message);
 }
 
 module.exports = { sendBookingConfirmation, sendWaitlistOffer, sendTestEmail };
