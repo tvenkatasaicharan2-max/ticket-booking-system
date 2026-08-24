@@ -12,6 +12,9 @@ import MyBookingsPage from './pages/MyBookingsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import OrganiserDashboard from './pages/OrganiserDashboard';
 import WaitlistAcceptPage from './pages/WaitlistAcceptPage';
+import ProfilePage from './pages/ProfilePage';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
 
 export default function App() {
   return (
@@ -22,6 +25,9 @@ export default function App() {
           <Routes>
             {/* Public */}
             <Route path="/"              element={<HomePage />} />
+            <Route path="/events"        element={<HomePage />} />
+            <Route path="/about"         element={<AboutPage />} />
+            <Route path="/contact"       element={<ContactPage />} />
             <Route path="/login"         element={<LoginPage />} />
             <Route path="/register"      element={<RegisterPage />} />
             <Route path="/events/:id"    element={<EventDetailPage />} />
@@ -33,6 +39,9 @@ export default function App() {
             />
             <Route path="/my-bookings"
               element={<ProtectedRoute roles={['customer']}><MyBookingsPage /></ProtectedRoute>}
+            />
+            <Route path="/profile"
+              element={<ProtectedRoute roles={['customer','organiser','admin']}><ProfilePage /></ProtectedRoute>}
             />
 
             {/* Admin only */}
