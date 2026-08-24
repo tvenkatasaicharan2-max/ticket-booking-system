@@ -47,15 +47,41 @@ module.exports = function startScheduler() {
 
       for (const wl of staleWaitlists) {
         let changed = false;
+        const seatIdsToRelease = [];
+
         for (const entry of wl.entries) {
           if (entry.status === 'offered' && entry.offerExpiresAt < now) {
             entry.status = 'expired';
             changed = true;
+            if (entry.offeredSeatId) seatIdsToRelease.push(entry.offeredSeatId);
           }
         }
+
         if (changed) {
           await wl.save();
-          // Try to offer to the next person in queue
+
+          // ── Release the held seat back to 'available' before offering to next person ──
+          if (seatIdsToRelease.length > 0) {
+            const inv = await SeatInventory.findOne({ event: wl.event });
+            if (inv) {
+              const releasedSeats = [];
+              for (const seat of inv.seats) {
+                if (seatIdsToRelease.includes(seat.seatId) && seat.status === 'held') {
+                  seat.status = 'available';
+                  seat.heldBy = null;
+                  seat.heldAt = null;
+                  seat.holdExpiresAt = null;
+                  releasedSeats.push({ seatId: seat.seatId, status: 'available' });
+                }
+              }
+              if (releasedSeats.length > 0) {
+                await inv.save();
+                emitSeatUpdate(wl.event.toString(), releasedSeats);
+              }
+            }
+          }
+
+          // Cascade to next person in queue
           await processWaitlist(wl.event.toString(), wl.category);
         }
       }
