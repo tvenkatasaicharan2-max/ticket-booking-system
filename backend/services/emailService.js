@@ -21,6 +21,9 @@ async function sendBookingConfirmation({ to, customerName, eventTitle, showDateT
     dateStyle: 'full', timeStyle: 'short'
   });
 
+  // Gmail blocks base64 data: images — use a public QR API URL that loads as a normal HTTPS image
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(bookingRef)}&bgcolor=ffffff&color=000000&margin=8`;
+
   const html = `
   <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#07070e;color:#f8fafc;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)">
     <div style="background:linear-gradient(135deg,#8b5cf6,#06b6d4);padding:32px;text-align:center">
@@ -37,7 +40,7 @@ async function sendBookingConfirmation({ to, customerName, eventTitle, showDateT
       </div>
       <div style="text-align:center;margin:32px 0">
         <p style="color:#94a3b8;margin-bottom:16px;font-size:14px">Show this QR code at the venue:</p>
-        <img src="${qrCodeDataUrl}" alt="QR Code" style="width:200px;height:200px;border-radius:12px;background:#fff;padding:8px"/>
+        <img src="${qrImageUrl}" alt="QR Code" width="200" height="200" style="border-radius:12px;background:#fff;padding:8px;display:block;margin:0 auto"/>
       </div>
       <p style="color:#475569;font-size:12px;text-align:center;margin:0">This is an automated message. Please do not reply.</p>
     </div>
