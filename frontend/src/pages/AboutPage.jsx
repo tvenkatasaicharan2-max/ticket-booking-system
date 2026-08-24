@@ -99,7 +99,7 @@ export default function AboutPage() {
                 ['🔄', 'Socket.IO'],
                 ['🔐', 'JWT + bcrypt'],
                 ['⏰', 'node-cron'],
-                ['📨', 'Resend Email API'],
+                ['📨', 'Brevo Email API'],
                 ['📊', 'QRCode.js'],
               ].map(([icon, name]) => (
                 <div key={name} style={{
