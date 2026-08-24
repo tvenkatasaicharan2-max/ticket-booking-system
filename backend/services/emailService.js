@@ -2,12 +2,15 @@ const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT) || 587,
-  secure: false,
+  port: parseInt(process.env.EMAIL_PORT) || 465,   // 465 = SMTPS (works on Railway); 587 is often blocked
+  secure: (process.env.EMAIL_PORT ? parseInt(process.env.EMAIL_PORT) === 465 : true),  // true for 465, false for 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+  connectionTimeout: 10000,   // fail fast — 10s instead of hanging forever
+  greetingTimeout: 10000,
+  socketTimeout: 10000
 });
 
 // Verify SMTP connection on startup — errors will appear in Railway logs immediately
