@@ -20,14 +20,14 @@ export default function OrganiserDashboard() {
   const fetchEvents = () => {
     setELoading(true);
     api.get('/events/organiser/mine')
-      .then(r => setEvents(r.data))
-      .catch(console.error)
+      .then(r => setEvents(Array.isArray(r.data) ? r.data : []))
+      .catch(err => { console.error(err); setEvents([]); })
       .finally(() => setELoading(false));
   };
 
   useEffect(() => {
     fetchEvents();
-    api.get('/admin/venues').then(r => setVenues(r.data)).catch(console.error);
+    api.get('/admin/venues').then(r => setVenues(Array.isArray(r.data) ? r.data : [])).catch(err => { console.error(err); setVenues([]); });
   }, []);
 
   const handleCreate = async (e) => {
@@ -100,7 +100,7 @@ export default function OrganiserDashboard() {
                 <div className="empty-state"><h3>No events yet</h3><p>Create your first event.</p></div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {events.map(ev => (
+                  {events?.map(ev => (
                     <div key={ev._id} className="card" style={{ padding: '20px 24px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
                         <div>

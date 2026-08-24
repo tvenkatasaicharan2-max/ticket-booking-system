@@ -21,8 +21,8 @@ export default function HomePage() {
     if (search) params.search = search;
 
     api.get('/events', { params })
-      .then(r => setEvents(r.data))
-      .catch(console.error)
+      .then(r => setEvents(Array.isArray(r.data) ? r.data : []))
+      .catch(err => { console.error(err); setEvents([]); })
       .finally(() => setLoading(false));
   }, [type, search]);
 
@@ -116,7 +116,7 @@ export default function HomePage() {
                 gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
                 gap: 24
               }}>
-                {events.map(event => (
+                {events?.map(event => (
                   <EventCard key={event._id} event={event} />
                 ))}
               </div>

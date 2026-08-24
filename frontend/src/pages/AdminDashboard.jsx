@@ -18,8 +18,8 @@ export default function AdminDashboard() {
   const fetchVenues = () => {
     setVLoading(true);
     api.get('/admin/venues')
-      .then(r => setVenues(r.data))
-      .catch(console.error)
+      .then(r => setVenues(Array.isArray(r.data) ? r.data : []))
+      .catch(err => { console.error(err); setVenues([]); })
       .finally(() => setVLoading(false));
   };
 
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
                 <div className="empty-state"><h3>No venues yet</h3><p>Create your first venue.</p></div>
               ) : (
                 <div style={{ display: 'grid', gap: 16 }}>
-                  {venues.map(v => (
+                  {venues?.map(v => (
                     <div key={v._id} className="card" style={{ padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
                       <div>
                         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{v.name}</h3>

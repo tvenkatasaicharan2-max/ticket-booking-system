@@ -10,8 +10,8 @@ export default function MyBookingsPage() {
   const fetchBookings = () => {
     setLoading(true);
     api.get('/bookings/my')
-      .then(r => setBookings(r.data))
-      .catch(console.error)
+      .then(r => setBookings(Array.isArray(r.data) ? r.data : []))
+      .catch(err => { console.error(err); setBookings([]); })
       .finally(() => setLoading(false));
   };
   useEffect(fetchBookings, []);
@@ -47,7 +47,7 @@ export default function MyBookingsPage() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {bookings.map(b => (
+            {bookings?.map(b => (
               <div key={b._id} className="card card-glow" style={{ padding: '28px 32px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 20 }}>
                   {/* Info */}
